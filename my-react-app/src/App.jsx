@@ -1,6 +1,5 @@
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
+// Using a web image for chat illustration
 import "./App.css";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
@@ -8,6 +7,7 @@ function App() {
   const [mainOutput, setMainOutput] = useState("");
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]); // 🧠 store chat history
+  const [loading, setLoading] = useState(false);
 
   const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
   const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
@@ -23,6 +23,8 @@ function App() {
     ];
     setMessages(newMessages);
     setInput("");
+    setLoading(true);
+    setMainOutput("");
 
     try {
       // Generate response using full history
@@ -31,38 +33,60 @@ function App() {
 
       const text = result.response.text();
       setMainOutput(text);
+      setLoading(false);
 
       // Add the model's reply to history too
       setMessages([...newMessages, { role: "model", parts: [{ text }] }]);
     } catch (err) {
       console.error(err);
       setMainOutput("❌ Error: " + err.message);
+      setLoading(false);
     }
   }
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank" rel="noreferrer">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank" rel="noreferrer">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <div className="chat-logo-container">
+        <img
+          src="https://cdn.mos.cms.futurecdn.net/VFLt5vHV7aCoLrLGjP9Qwm.jpg"
+          className="chat-logo"
+          alt="Chat AI"
+        />
       </div>
 
       <h1>Gemini + React Chat</h1>
       <div className="userInput">
         <input
           type="text"
-          placeholder="Type something..."
+          className="fancy-input"
+          placeholder="Type your message..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleChat();
+            }
+          }}
         />
-        <button onClick={handleChat}>Send</button>
+        <button className="fancy-btn" onClick={handleChat}>
+          <span role="img" aria-label="send">
+            💬
+          </span>{" "}
+          Send
+        </button>
       </div>
 
-      <div className="output">{mainOutput}</div>
+      <div className="output">
+        {loading ? (
+          <div className="loader">
+            <div className="spinner"></div>
+            <span>Thinking...</span>
+          </div>
+        ) : (
+          mainOutput
+        )}
+      </div>
     </>
   );
 }
