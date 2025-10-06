@@ -1,14 +1,14 @@
 import { useState } from "react";
-// Using a web image for chat illustration
 import "./App.css";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { marked } from "marked";
 
 function App() {
-  const [mainOutput, setMainOutput] = useState("");
+  // const [mainOutput, setMainOutput] = useState("");
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]); // 🧠 store chat history
   const [loading, setLoading] = useState(false);
-
+  const [plainText, setPlainText] = useState(""); // Add this line
   const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
   const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-001" });
@@ -24,7 +24,7 @@ function App() {
     setMessages(newMessages);
     setInput("");
     setLoading(true);
-    setMainOutput("");
+    setPlainText("⏳ Thinking..."); // Update state
 
     try {
       // Generate response using full history
@@ -32,14 +32,14 @@ function App() {
       const result = await chat.sendMessage(input);
 
       const text = result.response.text();
-      setMainOutput(text);
+      setPlainText(marked(text)); // Update state
       setLoading(false);
 
       // Add the model's reply to history too
       setMessages([...newMessages, { role: "model", parts: [{ text }] }]);
     } catch (err) {
       console.error(err);
-      setMainOutput("❌ Error: " + err.message);
+      setPlainText("❌ Error: " + err.message); // Update state
       setLoading(false);
     }
   }
@@ -81,10 +81,10 @@ function App() {
         {loading ? (
           <div className="loader">
             <div className="spinner"></div>
-            <span>Thinking...</span>
+            <span>Loading...</span>
           </div>
         ) : (
-          mainOutput
+          <div dangerouslySetInnerHTML={{ __html: plainText }} />
         )}
       </div>
     </>
