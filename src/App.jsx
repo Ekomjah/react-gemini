@@ -24,7 +24,7 @@ function App() {
     setMessages(newMessages);
     setInput("");
     setLoading(true);
-    setPlainText("⏳ Thinking..."); // Update state
+    setPlainText(""); // Update state
 
     try {
       // Generate response using full history
@@ -84,7 +84,7 @@ function App() {
             <span>Loading...</span>
           </div>
         ) : (
-          <div dangerouslySetInnerHTML={{ __html: plainText }} />
+          <div dangerouslySetInnerHTML={{ __html: plainText }}></div>
         )}
       </div>
     </>
